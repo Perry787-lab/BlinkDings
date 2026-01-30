@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blinkende Leuchtschrift</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      height: 100vh;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    .panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      padding: 40px;
+      border-radius: 20px;
+      border: 2px solid #fff;
+      text-align: center;
+      transition: all 0.5s;
+      z-index: 100;
+    }
+
+    .panel.hidden {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.5);
+      pointer-events: none;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 15px;
+      font-size: 20px;
+      border: 2px solid #fff;
+      background: transparent;
+      color: #fff;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-family: inherit;
+    }
+
+    input[type="text"]::placeholder {
+      color: #888;
+    }
+
+    .color-picker {
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      margin: 0 10px;
+      border: 3px solid #fff;
+      box-shadow: 0 0 20px rgba(255,255,255,0.5);
+      transition: all 0.3s;
+    }
+
+    .color-picker:hover,
+    .color-picker.selected {
+      box-shadow: 0 0 30px #fff, 0 0 40px currentColor;
+      transform: scale(1.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    button {
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .go-btn {
+      background: #fff;
+      color: #000;
+    }
+
+    .go-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,255,255,0.8);
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: 2px solid #fff;
+    }
+
+    .back-btn:hover {
+      background: #fff;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    /* Zurück-Button im Fullscreen-Modus */
+    .back-btn-floating {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      border: 2px solid #fff;
+      padding: 10px 15px;
+      border-radius: 50px;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 200;
+      opacity: 0;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .back-btn-floating.show {
+      opacity: 1;
+    }
+
+    #output {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: none;
+      padding: 20px;
+      z-index: 10;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    #output.short { font-size: clamp(12vh, 25vw, 30vh); }
+    #output.medium { font-size: clamp(8vh, 20vw, 22vh); }
+    #output.long { font-size: clamp(5vh, 15vw, 16vh); line-height: 1.3; }
+    #output.very-long { font-size: clamp(3vh, 12vw, 13vh); line-height: 1.4; }
+
+    #output.blink {
+      animation: blink-glow 1s steps(2, start) infinite;
+    }
+
+    @keyframes blink-glow {
+      0%, 45% {
+        text-shadow: 
+          0 0 10px var(--blink-color),
+          0 0 20px var(--blink-color),
+          0 0 40px var(--blink-color),
+          0 0 80px var(--blink-color);
+      }
+      50%, 100% {
+        opacity: 0;
+        text-shadow: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .panel {
+        padding: 30px 20px;
+        width: 90%;
+      }
+      input[type="text"] {
+        width: 250px;
+      }
+      .back-btn-floating {
+        top: 15px;
+        right: 15px;
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Zurück-Button (Fullscreen) -->
+  <button class="back-btn-floating" id="backButton">◀️ Zurück</button>
+
+  <div class="panel" id="panel">
+    <input type="text" id="textInput" placeholder="Deinen Text eingeben..." maxlength="200">
+    
+    <div style="margin: 20px 0;">
+      <label style="color: #fff; font-size: 18px;">Farbe wählen:</label><br><br>
+      <input type="color" class="color-picker selected" id="colorRed" value="#ff0000" title="Rot">
+      <input type="color" class="color-picker" id="colorGreen" value="#00ff00" title="Grün">
+      <input type="color" class="color-picker" id="colorBlue" value="#0066ff" title="Blau">
+      <input type="color" class="color-picker" id="colorYellow" value="#ffff00" title="Gelb">
+      <input type="color" class="color-picker" id="colorPink" value="#ff00ff" title="Magenta">
+      <input type="color" class="color-picker" id="colorCyan" value="#00ffff" title="Cyan">
+    </div>
+    
+    <div class="button-group">
+      <button class="back-btn" id="backButtonPanel">🔄 Zurücksetzen</button>
+      <button class="go-btn" id="goButton">🚀 GO 🚀</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+
+  <script>
+    const textInput = document.getElementById('textInput');
+    const panel = document.getElementById('panel');
+    const output = document.getElementById('output');
+    const goButton = document.getElementById('goButton');
+    const backButton = document.getElementById('backButton');
+    const backButtonPanel = document.getElementById('backButtonPanel');
+    
+    let currentColor = '#ff0000';
+
+    // Farbauswahl
+    document.querySelectorAll('.color-picker').forEach(picker => {
+      picker.addEventListener('change', function() {
+        currentColor = this.value;
+        document.querySelectorAll('.color-picker').forEach(p => p.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+      
+      picker.addEventListener('click', function() {
+        currentColor = this.value;
+        document.querySelectorAll('.color-picker').forEach(p => p.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+
+    function setTextSize(text) {
+      const length = text.length;
+      output.classList.remove('short', 'medium', 'long', 'very-long');
+      
+      if (length <= 5) {
+        output.classList.add('short');
+      } else if (length <= 15) {
+        output.classList.add('medium');
+      } else if (length <= 40) {
+        output.classList.add('long');
+      } else {
+        output.classList.add('very-long');
+      }
+    }
+
+    function displayText() {
+      const text = textInput.value.trim();
+      if (!text) {
+        reset();
+        return;
+      }
+
+      panel.classList.add('hidden');
+      backButton.classList.add('show');
+      output.textContent = text;
+      output.style.color = '#fff';
+      output.style.setProperty('--blink-color', currentColor);
+      setTextSize(text);
+      output.classList.add('blink');
+    }
+
+    function reset() {
+      panel.classList.remove('hidden');
+      backButton.classList.remove('show');
+      output.textContent = '';
+      output.classList.remove('blink', 'short', 'medium', 'long', 'very-long');
+      textInput.focus();
+    }
+
+    goButton.addEventListener('click', displayText);
+    backButton.addEventListener('click', reset);
+    backButtonPanel.addEventListener('click', reset);
+    
+    textInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') displayText();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') reset();
+    });
+
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      reset();
+    });
+
+    textInput.focus();
+  </script>
+</body>
+</html>
