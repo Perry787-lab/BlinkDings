@@ -165,6 +165,18 @@
       animation: blink-glow 1s steps(2, start) infinite;
     }
 
+    /* Sehr helle Darstellung, wenn aktiviert (wird beim Klick auf GO gesetzt) */
+    #output.bright {
+      color: #ffffff;
+      /* Verstärktes, weißes Zentrum plus farbiger Schein */
+      text-shadow: 
+        0 0 15px rgba(255,255,255,1),
+        0 0 30px rgba(255,255,255,0.9),
+        0 0 60px var(--blink-color),
+        0 0 120px var(--blink-color);
+      filter: brightness(1.8) saturate(1.2);
+    }
+
     @keyframes blink-glow {
       0%, 45% {
         /* FARBIGER GLOW + WEIßER TEXT bleibt */
@@ -275,14 +287,14 @@
       output.textContent = text;
       output.style.setProperty('--blink-color', currentColor);
       setTextSize(text);
-      output.classList.add('blink');
+      output.classList.add('blink', 'bright');
     }
 
     function reset() {
       panel.classList.remove('hidden');
       backButton.classList.remove('show');
       output.textContent = '';
-      output.classList.remove('blink', 'short', 'medium', 'long', 'very-long');
+      output.classList.remove('blink', 'bright', 'short', 'medium', 'long', 'very-long');
       textInput.focus();
     }
 
