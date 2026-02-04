@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blinkende Leuchtschrift</title>
+  <title>Leuchtschrift</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&display=swap');
+
     * {
       margin: 0;
       padding: 0;
@@ -15,7 +17,7 @@
       background: #000;
       height: 100vh;
       overflow: hidden;
-      font-family: Arial, sans-serif;
+      font-family: 'Teko', sans-serif;
     }
 
     .panel {
@@ -30,6 +32,7 @@
       text-align: center;
       transition: all 0.5s;
       z-index: 100;
+      backdrop-filter: blur(20px);
     }
 
     .panel.hidden {
@@ -43,11 +46,13 @@
       padding: 15px;
       font-size: 20px;
       border: 2px solid #fff;
-      background: transparent;
+      background: rgba(255,255,255,0.1);
       color: #fff;
       border-radius: 10px;
       margin-bottom: 20px;
-      font-family: inherit;
+      font-family: 'Teko', sans-serif;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
     }
 
     input[type="text"]::placeholder {
@@ -83,16 +88,17 @@
       border: none;
       padding: 15px 30px;
       font-size: 18px;
-      font-weight: bold;
+      font-weight: 600;
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.3s;
-      font-family: inherit;
+      font-family: 'Teko', sans-serif;
     }
 
     .go-btn {
-      background: #fff;
+      background: linear-gradient(45deg, #fff, #f0f0f0);
       color: #000;
+      font-weight: 700;
     }
 
     .go-btn:hover {
@@ -127,6 +133,7 @@
       opacity: 0;
       transition: all 0.3s;
       backdrop-filter: blur(10px);
+      font-family: 'Teko', sans-serif;
     }
 
     .back-btn-floating.show {
@@ -144,16 +151,15 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      /* HELLER WEISS */
-      color: #ffffff;
-      /* Helle Basis-Schatten für bessere Sichtbarkeit */
-      text-shadow: 0 0 5px rgba(255,255,255,0.8);
-      font-weight: bold;
+      font-family: 'Teko', sans-serif;
+      font-weight: 600;
       padding: 20px;
       z-index: 10;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       line-height: 1.1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     #output.short { font-size: clamp(12vh, 25vw, 30vh); }
@@ -161,38 +167,12 @@
     #output.long { font-size: clamp(5vh, 15vw, 16vh); line-height: 1.3; }
     #output.very-long { font-size: clamp(3vh, 12vw, 13vh); line-height: 1.4; }
 
-    #output.blink {
-      animation: blink-glow 1s steps(2, start) infinite;
-    }
-
-    /* Sehr helle Darstellung, wenn aktiviert (wird beim Klick auf GO gesetzt) */
+    /* Farbiger Text + LEICHTER GLOW */
     #output.bright {
-      color: #ffffff;
-      /* Verstärktes, weißes Zentrum plus farbiger Schein */
+      color: var(--blink-color);
       text-shadow: 
-        0 0 15px rgba(255,255,255,1),
-        0 0 30px rgba(255,255,255,0.9),
-        0 0 60px var(--blink-color),
-        0 0 120px var(--blink-color);
-      filter: brightness(1.8) saturate(1.2);
-    }
-
-    @keyframes blink-glow {
-      0%, 45% {
-        /* FARBIGER GLOW + WEIßER TEXT bleibt */
-        text-shadow: 
-          0 0 10px var(--blink-color),
-          0 0 20px var(--blink-color),
-          0 0 40px var(--blink-color),
-          0 0 80px var(--blink-color),
-          /* Heller weißer Kern für bessere Lesbarkeit */
-          0 0 5px rgba(255,255,255,1),
-          0 0 10px rgba(255,255,255,0.8);
-      }
-      50%, 100% {
-        opacity: 0;
-        text-shadow: none;
-      }
+        0 0 10px var(--blink-color),
+        0 0 20px rgba(255,255,255,0.4);
     }
 
     @media (max-width: 768px) {
@@ -219,7 +199,7 @@
     <input type="text" id="textInput" placeholder="Deinen Text eingeben..." maxlength="200">
     
     <div style="margin: 20px 0;">
-      <label style="color: #fff; font-size: 18px;">Farbe wählen:</label><br><br>
+      <label style="color: #fff; font-size: 18px; font-family: 'Teko', sans-serif;">Farbe wählen:</label><br><br>
       <input type="color" class="color-picker selected" id="colorRed" value="#ff0000" title="Rot">
       <input type="color" class="color-picker" id="colorGreen" value="#00ff00" title="Grün">
       <input type="color" class="color-picker" id="colorBlue" value="#0066ff" title="Blau">
@@ -287,14 +267,15 @@
       output.textContent = text;
       output.style.setProperty('--blink-color', currentColor);
       setTextSize(text);
-      output.classList.add('blink', 'bright');
+      output.classList.add('bright');
     }
 
     function reset() {
       panel.classList.remove('hidden');
       backButton.classList.remove('show');
       output.textContent = '';
-      output.classList.remove('blink', 'bright', 'short', 'medium', 'long', 'very-long');
+      output.classList.remove('bright', 'short', 'medium', 'long', 'very-long');
+      output.style.removeProperty('--blink-color');
       textInput.focus();
     }
 
